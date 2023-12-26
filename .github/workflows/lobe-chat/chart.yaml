@@ -1,0 +1,36 @@
+name: Lobe-chat - Update Helm Chart Version
+
+on:
+  pull_request:
+    branches: ["dependabot/docker/charts/lobe-chat/lobehub/*"]
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Get app version
+        id: app_version
+        run: |
+          APP_VERSION=$(grep 'tag: ' charts/lobe-chat/values.yaml | cut -d ':' -f 2 | tr -d ' ')
+          echo "::set-output name=version::${APP_VERSION}"
+
+      - name: Update Chart.yaml
+        run: |
+            sed -i 's/appVersion:.*/appVersion: ${{ steps.app_version.outputs.version }}' charts/lobe-chat/Chart.yaml
+            
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit --amend
+          
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
