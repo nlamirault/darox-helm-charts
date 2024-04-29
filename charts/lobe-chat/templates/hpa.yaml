@@ -5,6 +5,7 @@ metadata:
   name: {{ include "lobe-chat.fullname" . }}
   labels:
     {{- include "lobe-chat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: availability
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
